@@ -1,0 +1,70 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: is-commtrace-exporter
+  namespace: default
+spec:
+  type: NodePort
+  selector:
+    app: is-commtrace-exporter
+  ports:
+    - name: udpserver
+      protocol: UDP
+      port: 8951
+      targetPort: 8951
+      nodePort: 31589
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: is-commtrace-exporter-cfgmap
+  namespace: default
+data:
+  is-commtracer-exptr: |-
+    {
+      "service_name":"CommTrace",
+      "zipkin_host":"10.10.2.7",
+      "zipkin_port":30200,
+      "commtrace_exporter":{
+          "port":8951,
+          "buffer_size":2048
+      }
+    }
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: "is-commtrace-exporter"
+  namespace: default
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: is-commtrace-exporter
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: zeus
+      containers:
+        - name: service
+          image: wagnercotta/is-commtrace-exporter:latest
+          ports:
+            - containerPort: 8951
+              protocol: UDP
+          command: ["is-commtrace-exporter"]
+          args: ["/opt/is-commtracer/etc/conf/config.json"]
+          imagePullPolicy: Always
+          resources:
+            limits:
+              cpu: "1"
+              memory: 256Mi
+          volumeMounts:
+            - name: config
+              mountPath: /opt/is-commtracer/etc/conf/
+      volumes:
+        - name: config
+          configMap:
+            name: is-commtrace-exporter-cfgmap
+            items:
+              - key: is-commtracer-exptr
+                path: config.json

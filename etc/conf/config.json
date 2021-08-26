@@ -1,0 +1,9 @@
+{
+    "service_name":"CommTrace",
+    "zipkin_host":"10.10.2.7",
+    "zipkin_port":30200,
+    "commtrace_exporter":{
+        "port":8951,
+        "buffer_size":2048
+    }
+}
