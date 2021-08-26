@@ -47,7 +47,7 @@ spec:
         kubernetes.io/hostname: zeus
       containers:
         - name: service
-          image: wagnercotta/is-commtrace-exporter:latest
+          image: labviros/is-commtrace-exporter:latest
           ports:
             - containerPort: 8951
               protocol: UDP
